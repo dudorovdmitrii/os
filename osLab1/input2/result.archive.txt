@@ -1,0 +1,4 @@
+/input1/test.txt
+4
+word
+|

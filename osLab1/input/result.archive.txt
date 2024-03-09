@@ -1,0 +1,8 @@
+/input1/test.txt
+4
+word
+|
+/input2/ghj.txt
+5
+hello
+|

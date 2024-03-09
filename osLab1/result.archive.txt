@@ -1,0 +1,17 @@
+/input1/test.txt
+4
+word
+|
+/input2/ghj.txt
+5
+hello
+|
+/input/text.txt
+6
+dsfds
+
+|
+/input/subInput/a.cpp
+0
+
+|
