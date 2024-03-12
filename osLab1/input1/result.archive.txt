@@ -1,0 +1,9 @@
+/input2/test.go
+30
+go
+file 
+in 
+input2
+directory
+
+|

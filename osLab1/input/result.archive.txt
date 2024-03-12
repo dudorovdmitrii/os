@@ -1,8 +1,13 @@
-/input1/test.txt
-4
-word
+/input2/test.go
+30
+go
+file 
+in 
+input2
+directory
+
 |
-/input2/ghj.txt
-5
-hello
+/input1/test.py
+31
+python file in input1 directory
 |
