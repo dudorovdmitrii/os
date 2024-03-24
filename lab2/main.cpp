@@ -8,6 +8,7 @@
 #include <sys/types.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <errno.h>
 using namespace std;
 #define RETRIES 1
 #define SLEEP_SECONDS 1
@@ -42,14 +43,15 @@ int startTerminalProcess()
     }
     else
     {
-      string data = current;
-      v.push_back(data.data());
-      cout << v.size();
+      char *test = (char *)malloc(sizeof(char) * current.size());
+      strcpy(test, current.data());
+      v.push_back(test);
       current = "";
     }
   }
+
   v.push_back(current.data());
-  v.push_back(NULL);
+  string first = v[0];
 
   pid_t child_pid;
   child_pid = fork();
@@ -63,14 +65,14 @@ int startTerminalProcess()
   {
     /* Мы - дочерний процесс */
 
-    int code = execvp(v[0], const_cast<char *const *>(v.data()));
+    int code = execvp(first.data(), const_cast<char *const *>(v.data()));
     int retries = RETRIES;
     while (code != 0 && retries > 0)
     {
       retries--;
       cout << "Процесс завершился аварийно c кодом " << code << ". Перезапуск через " << SLEEP_SECONDS << " секунд.\n";
       sleep(SLEEP_SECONDS);
-      code = execvp(v[0], const_cast<char *const *>(v.data()));
+      code = execvp(first.data(), const_cast<char *const *>(v.data()));
     }
     cout << "Процесс завершился аварийно c кодом " << code << " после " << RETRIES + 1 << " попыток.\n";
     break;
