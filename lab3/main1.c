@@ -10,7 +10,6 @@
 #define QUEUE_PERMISSIONS 0660
 #define MAX_MESSAGES 10
 #define MAX_MSG_SIZE 256
-#define MSG_BUFFER_SIZE MAX_MSG_SIZE + 10
 
 int main (int argc, char **argv)
 {
@@ -22,7 +21,7 @@ int main (int argc, char **argv)
         return -1;
     }
 
-    char buff[MSG_BUFFER_SIZE];
+    char buff[MAX_MSG_SIZE];
     fgets(buff, sizeof(buff), file);
     fclose(file);
 
@@ -39,13 +38,10 @@ int main (int argc, char **argv)
         return -1;
     }
 
-    if (mq_send (queue, buff, strlen (buff) + 1, 0) == -1) {
+    if (mq_send (queue, buff, MAX_MSG_SIZE, 0) == -1) {
         perror("Failed to send a message");
         return -1;
     }
-
-    printf("message sent %s \n", buff);
-    
 
     return 0;
 }

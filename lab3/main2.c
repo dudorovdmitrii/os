@@ -6,13 +6,12 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <mqueue.h>
-#include <sys/wait.h> // Возможность кидать в ожидание
+#include <sys/wait.h>
 
 #define QUEUE_NAME "/queue-name"
 #define QUEUE_PERMISSIONS 0660
 #define MAX_MESSAGES 10
 #define MAX_MSG_SIZE 256
-#define MSG_BUFFER_SIZE MAX_MSG_SIZE + 10
 #define FIRST_PROGRAM_NAME "main1"
 
 int main(int argc, char *argv[]) {
@@ -40,7 +39,7 @@ int main(int argc, char *argv[]) {
 
     if (childPid1 == 0) {
         (void)execl(FIRST_PROGRAM_NAME, FIRST_PROGRAM_NAME, argv[1], NULL);
-        exit(EXIT_SUCCESS);
+        exit(0);
     } else { 
         childPid2 = fork();
 
@@ -51,27 +50,25 @@ int main(int argc, char *argv[]) {
 
         if (childPid2 == 0) { 
             (void)execl(FIRST_PROGRAM_NAME, FIRST_PROGRAM_NAME, argv[2], NULL);
-            exit(EXIT_SUCCESS);
+            exit(0);
         } else { 
             waitpid(childPid1, NULL, 0);
             waitpid(childPid2, NULL, 0);
         }
     }
 
-    char buffer1[MSG_BUFFER_SIZE] = "";
-    char buffer2[MSG_BUFFER_SIZE] = "";
+    char buffer1[MAX_MSG_SIZE] = "";
+    char buffer2[MAX_MSG_SIZE] = "";
 
-    if (mq_receive(queue, buffer1, MSG_BUFFER_SIZE, NULL) == -1) {
+    if (mq_receive(queue, buffer1, MAX_MSG_SIZE, NULL) == -1) {
         perror("Failed to receive a message");
         return -1;
     }
-    printf("Message received: %s \n", buffer1);
 
-     if (mq_receive(queue, buffer2, MSG_BUFFER_SIZE, NULL) == -1) {
+     if (mq_receive(queue, buffer2, MAX_MSG_SIZE, NULL) == -1) {
         perror("Failed to receive a message");
         return -1;
     }
-    printf("Message received: %s \n", buffer2);
 
     char outputBuffer[BUFSIZ + 1];
     char *outputFileName;
@@ -80,7 +77,7 @@ int main(int argc, char *argv[]) {
     FILE *output = fopen(outputFileName, "w+");
 
     int i = 0;
-    for (i = 0; i < MSG_BUFFER_SIZE; i++) {
+    for (i = 0; i < MAX_MSG_SIZE; i++) {
         if (strlen(buffer1) < i) {
             buffer1[i] = 0;
         }
@@ -88,16 +85,21 @@ int main(int argc, char *argv[]) {
             buffer2[i] = 0;
         }
 
-        if (buffer1[i] == 0 && buffer2[i] == 0) {
-            break;
+        if (buffer1[i] == buffer2[i]) {
+            if (buffer1[i] == 0) {
+                break;
+            }
+
+            outputBuffer[i] = buffer1[i];
+        }
+        else {
+            outputBuffer[i] = buffer1[i] ^ buffer2[i];
         }
 
-        outputBuffer[i] = buffer1[i] ^ buffer2[i];
-        printf("output[%d]: %d ^ %d = %d\n", i,  (int)buffer1[i], (int)buffer2[i], outputBuffer[i]);
         fprintf(output, "%c", outputBuffer[i]);
     }
 
     fclose(output);
     mq_close(queue);
-    exit(EXIT_SUCCESS);
+    return 0;
 }
